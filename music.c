@@ -56,9 +56,9 @@ void BigClock(void)	// BigClock是一个按0x11才结束播放的音乐，极其
 		if (getkeycode() == 0x11) 
 		{
 			while(getkeycode() == 0x11) display_time();	// 到松开时退出
+			TR1 = 0;
+			beep = 1; // 关闭timer1和蜂鸣器
 			return;//break;
 		}
 	}
-	TR1 = 0;
-	beep = 1; // 关闭timer1和蜂鸣器
 }
