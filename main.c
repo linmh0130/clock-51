@@ -93,17 +93,17 @@ void display_date(void)	   // 显示日期
 {
 	unsigned char date[12];
 	unsigned char i,j,k;
-	date[0] = led_table[2];date[1] = led_table[year/100];
-	date[2] = led_table[(year%100)/10];	date[3] = led_table[year%10];
-	date[4] = 0x08;date[5] = led_table[month/10];
-	date[6] = led_table[month%10]; date[7] = 0x08;
-	date[8] = led_table[day/10]; date[9] = led_table[day%10];
-	date[10] = date[11] = 0x00;
 
 	for (i=0;i<27;i++)	  // 循环3次真TM烦
 	{
 		for(k=0x40;k>0;k--)
 		{
+			date[0] = led_table[2];date[1] = led_table[year/100];
+			date[2] = led_table[(year%100)/10];	date[3] = led_table[year%10];
+			date[4] = 0x08;date[5] = led_table[month/10];
+			date[6] = led_table[month%10]; date[7] = 0x08;
+			date[8] = led_table[day/10]; date[9] = led_table[day%10];
+			date[10] = date[11] = 0x00;
 			for(j=0;j<8;j++)
 			{
 				XBYTE[0X8000] = 0X80>>j;
@@ -395,8 +395,6 @@ void timer0_int(void) interrupt 1
 		{
 			sec = 0;
 			min++;
-			if((alarm_on_flag==1) && (hour == ahour) && (min == amin)) alarm_flag=1;
-			// 置闹钟开，由main函数响闹钟,因最小单位是分钟，所以在分钟变化时开响
 			if (min ==60)
 			{
 				min = 0;
@@ -408,6 +406,8 @@ void timer0_int(void) interrupt 1
 				}
 			}
 		}
+		if((alarm_on_flag==1) && (hour == ahour) && (min == amin) && (sec == 0)) alarm_flag=1;
+				// 置闹钟开，由main函数响闹钟
 	}
 }
 
