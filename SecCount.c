@@ -5,12 +5,12 @@
 
 #define MEM 4	// 存储时间数
 #define PUSH(KEY) delayms(10);if (getkeycode() != (KEY)) break; \
-				  while(getkeycode() == (KEY)) display_sc(rank,chour[rank],cmin[rank],csec[rank],cdsec[rank]) //按键暂留
+				  while(getkeycode() == (KEY)) display_sc(rank,cmin[rank],csec[rank],cdsec[rank]) //按键暂留
 
 UCHAR code rank_tab[] = {0x00,0x01,0x40,0x08};	//显示第几个的标记
-UCHAR chour[MEM]={0,0,0,0}, cmin[MEM]={0,0,0,0}, csec[MEM] = {0,0,0,0}, cdsec[MEM]={0,0,0,0};
+UCHAR /*chour[MEM]={0,0,0,0},*/ cmin[MEM]={0,0,0,0}, csec[MEM] = {0,0,0,0}, cdsec[MEM]={0,0,0,0};
 unsigned int sc_count = 0; //计数
-
+/*
 void display_sc(UCHAR rank, UCHAR hour, UCHAR min, UCHAR sec, UCHAR dsec)
 {	// rank=0则正计时，不然就显示次序
 	XBYTE[0X8000] = 0X80;
@@ -37,6 +37,31 @@ void display_sc(UCHAR rank, UCHAR hour, UCHAR min, UCHAR sec, UCHAR dsec)
 	XBYTE[0X8000] = 0X01;
 	XBYTE[0X9000] = led_table[dsec];
 	delayms(1);
+} */
+
+void display_sc(UCHAR rank, UCHAR min, UCHAR sec, UCHAR dsec)
+{	// rank=0则正计时，不然就显示次序
+	XBYTE[0X8000] = 0X80;
+	XBYTE[0X9000] = rank_tab[rank];
+	delayms(1);
+	XBYTE[0X8000] = 0X20;
+	XBYTE[0X9000] = led_table[min/10];
+	delayms(1);
+	XBYTE[0X8000] = 0X10;
+	XBYTE[0X9000] = led_table[min%10] | 0x80;
+	delayms(1);
+	XBYTE[0X8000] = 0X08;
+	XBYTE[0X9000] = led_table[sec/10];
+	delayms(1);
+	XBYTE[0X8000] = 0X04;
+	XBYTE[0X9000] = led_table[sec%10] | 0x80;
+	delayms(1);
+	XBYTE[0X8000] = 0X02;
+	XBYTE[0X9000] = led_table[dsec/10];
+	delayms(1);
+	XBYTE[0X8000] = 0X01;
+	XBYTE[0X9000] = led_table[dsec%10] | 0x80;
+	delayms(1);
 }
 
 void clear(void)
@@ -45,7 +70,7 @@ void clear(void)
 	TR1=0;TL1=0;
 	for (i=0;i<MEM;i++)
 	{
-		chour[i] = 0;
+		//chour[i] = 0;
 		cmin[i] = 0;
 		csec[i] = 0;
 		cdsec[i] = 0;
@@ -56,10 +81,10 @@ void clear(void)
 void sc_timer1_int(void) /*interrupt 3*/	// 给秒表用的timer1中断
 {
 	sc_count++;
-	if (sc_count == 360)
+	if (sc_count == 36)
 	{
 		sc_count =0;cdsec[0]++;
-		if(cdsec[0] ==10)
+		if(cdsec[0] ==100)
 		{
 			cdsec[0] = 0;csec[0]++;
 			if(csec[0] ==60)
@@ -67,8 +92,8 @@ void sc_timer1_int(void) /*interrupt 3*/	// 给秒表用的timer1中断
 				csec[0] = 0;cmin[0]++;
 				if(cmin[0] ==60)
 				{
-					cmin[0]=0;chour[0]++;
-					if (chour[0] ==24) chour[0]=0;
+					cmin[0]=0;//chour[0]++;
+					//if (chour[0] ==24) chour[0]=0;
 				}
 			}
 		}
@@ -83,7 +108,8 @@ void SecCount(void)
 	ptm1 = sc_timer1_int;	// 将ptm1置为秒表功能对应中断函数
 	while(1)
 	{
-		display_sc(rank,chour[rank],cmin[rank],csec[rank],cdsec[rank]);
+		//display_sc(rank,chour[rank],cmin[rank],csec[rank],cdsec[rank]);
+		display_sc(rank,cmin[rank],csec[rank],cdsec[rank]);
 		switch(getkeycode())
 		{													  
 			case 0x11: PUSH(0X11);
@@ -96,8 +122,8 @@ void SecCount(void)
 			case 0x12: PUSH(0X12);			// 0x12 记录和回看
 					   if((sm==1)&& TR1 && (crank<MEM)) // sm==1记录
 					   {
-					   	chour[crank] = chour[0];
-						cmin[crank] = chour[0];
+					   	//chour[crank] = chour[0];
+						cmin[crank] = cmin[0];
 						csec[crank] = csec[0];
 						cdsec[crank] = cdsec[0];
 						crank++;
